@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./postgres/Dockerfile
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_USER: user
+      POSTGRES_DB: db
+
+  adminer:
+    build:
+      context: .
+      dockerfile: ./adminer/Dockerfile
+    restart: always
+    ports:
+      - 8080:8080
+
+  ftp-server:
+    image: garethflowers/ftp-server
+    restart: always
+    environment:
+      FTP_PASS: 123
+      FTP_USER: user
+    ports:
+      - 30-31:20-21/tcp
+      - 50000-50009:40000-40009/tcp
+    volumes:
+      - ./data:/home/user/
+
+  backup:
+    image: postgres:alpine
+    depends_on:
+      - db
+    volumes:
+      - ./backups:/backups
+    command: ["sh", "-c", "while true; do PGPASSWORD=laurea pg_dump -U alex -h db db > /backups/db_backup_$(date +%Y%m%d_%H%M%S).sql; sleep 86400; done"]
