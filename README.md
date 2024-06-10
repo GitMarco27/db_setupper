@@ -10,3 +10,7 @@ docker compose up --build
 docker compose down
 docker volume prune
 ```
+
+```shell
+psql -h localhost -U user -d db -p 5434
+```

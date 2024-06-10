@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: 12345
       POSTGRES_USER: user
       POSTGRES_DB: db
+    ports:
+      - "5434:5432"  # Expose port 5432
 
   adminer:
     build:
@@ -19,6 +21,20 @@ services:
     restart: always
     ports:
       - 8080:8080
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "80:80"
+    volumes:
+      - ./pgadmin_data/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - db
 
   ftp-server:
     image: garethflowers/ftp-server
@@ -38,4 +54,4 @@ services:
       - db
     volumes:
       - ./backups:/backups
-    command: ["sh", "-c", "while true; do PGPASSWORD=laurea pg_dump -U alex -h db db > /backups/db_backup_$(date +%Y%m%d_%H%M%S).sql; sleep 86400; done"]
+    command: ["sh", "-c", "while true; do PGPASSWORD=12345 pg_dump -U user -h db db > /backups/db_backup_$(date +%Y%m%d_%H%M%S).sql; sleep 86400; done"]
